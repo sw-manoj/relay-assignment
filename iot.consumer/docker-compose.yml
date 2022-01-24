@@ -1,0 +1,31 @@
+version: '3'
+services:
+  mysql-standalone:
+    image: 'mysql:5.7'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=test
+    ports:
+      - "3306:3306"
+    networks:
+      - mysql-network
+  iot-consumer-container:
+    ports:
+      - "7000:7000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-standalone:3306/test?autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+    build:
+      dockerfile: Dockerfile
+      context: .
+    restart: unless-stopped
+    depends_on:
+      - mysql-standalone
+    networks:
+      - mysql-network
+networks:
+  mysql-network:
+    external: true
+    name: iot-producer-simulator-api_kafka-network
